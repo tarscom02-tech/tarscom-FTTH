@@ -394,7 +394,7 @@ export default function App() {
           </form>
 
           <div className="pt-2 text-center text-[11px] text-slate-500 border-t border-slate-800/60">
-            Credenciales de prueba: <strong className="text-slate-400">admin</strong> / <strong className="text-slate-400">tarscom2026</strong>
+          TARSCOM FTTH v1.0 • Acceso Privado
           </div>
         </div>
       </div>
