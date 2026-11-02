@@ -566,7 +566,7 @@ export default function App() {
     await loadInitialData();
   };
 
-  const handlePortStatusChange = (napId, portNum, newStatus) => {
+  const handlePortStatusChange = (napId: string, portNum: number, newStatus: string) => {
     setNaps(naps.map(nap => {
       if (nap.id === napId) {
         const updatedPorts = nap.ports.map(p => {
