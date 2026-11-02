@@ -453,34 +453,35 @@ export default function App() {
   );
   const occupancyRate = totalPorts > 0 ? ((occupiedPorts / totalPorts) * 100).toFixed(1) : 0;
 
-  const handleSaveNap = async (e) => {
+  const handleSaveNap = async (e: React.FormEvent) => {
     e.preventDefault();
-    const capacityNum = parseInt(napFormData.capacity);
-    const newPorts = Array.from({ length: capacityNum }, (_, i) => ({
-      portNumber: i + 1,
-      status: 'free',
-      clientId: null
-    }));
   
-    const newNap = {
-      ...napFormData,
-      id: napFormData.id || `NAP-${Date.now().toString().slice(-4)}`,
-      capacity: capacityNum,
-      powerDbm: parseFloat(napFormData.powerDbm),
-      lat: parseFloat(napFormData.lat) || -9.5298,
-      lng: parseFloat(napFormData.lng) || -77.5289,
-      logs: [{ id: Date.now(), date: new Date().toISOString().slice(0, 10), text: 'NAP registrada en el sistema' }],
-      ports: newPorts
-    };
+    const napToSave = editingNapId
+      ? { ...napFormData, id: editingNapId }
+      : {
+          ...napFormData,
+          id: `NAP-${Date.now().toString().slice(-4)}`,
+          ports: Array.from({ length: parseInt(napFormData.totalPorts) }, (_, i) => ({
+            portNumber: i + 1,
+            status: 'free',
+            clientId: null
+          }))
+        };
   
-    // Guardar en la base de datos de Supabase
-    const { error } = await supabase.from('naps').upsert([newNap]);
+    // 1. Guardar en Supabase
+    const { error } = await supabase.from('naps').upsert([napToSave]);
     if (error) {
       console.error('Error al guardar NAP en Supabase:', error);
+      return;
     }
   
-    // Cerrar modal y limpiar formulario (continúa con la lógica que tenías abajo)
+    // 2. Limpiar modal
     setIsNapModalOpen(false);
+    setEditingNapId(null);
+    setNapFormData(emptyNapForm);
+  
+    // 3. Recargar datos locales
+    await loadInitialData();
   };
 
     setNaps([...naps, newNap]);
@@ -523,7 +524,7 @@ export default function App() {
     const targetNapId = clientFormData.napId;
     const targetPort = parseInt(clientFormData.portNumber);
   
-    // Liberar puerto anterior si el cliente fue movido de NAP o puerto
+    // Liberar puerto anterior si el cliente fue movido de NAP o puerto al editar
     if (editingClientId) {
       const oldClient = clients.find(c => c.id === editingClientId);
       if (oldClient && (oldClient.napId !== targetNapId || oldClient.portNumber !== targetPort)) {
@@ -565,16 +566,20 @@ export default function App() {
       return nap;
     }));
   
-    // Guardar en la base de datos de Supabase
+    // Guardar en la base de datos de Supabase y sincronizar
     const { error } = await supabase.from('clients').upsert([clientToSave]);
     if (error) {
       console.error('Error al guardar cliente en Supabase:', error);
+      return;
     }
   
     // Limpiar formulario y cerrar modal
     setIsClientModalOpen(false);
     setEditingClientId(null);
     setClientFormData(emptyClientForm);
+  
+    // Recargar datos para reflejar los cambios en tiempo real
+    await loadInitialData();
   };
 
   const handlePortStatusChange = (napId, portNum, newStatus) => {
@@ -1292,4 +1297,3 @@ export default function App() {
   );
 
 
-  
