@@ -27,18 +27,6 @@ const IconMapPin = ({ size = 20, className = "" }) => (
   </svg>
 );
 
-const IconRadio = ({ size = 20, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <circle cx="12" cy="12" r="2" /><path d="M16.2 7.8a6 6 0 0 1 0 8.4" /><path d="M7.8 16.2a6 6 0 0 1 0-8.4" /><path d="M19.1 4.9a10 10 0 0 1 0 14.2" /><path d="M4.9 19.1a10 10 0 0 1 0-14.2" />
-  </svg>
-);
-
-const IconCpu = ({ size = 20, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <rect x="4" y="4" width="16" height="16" rx="2" /><rect x="9" y="9" width="6" height="6" /><line x1="9" y1="1" x2="9" y2="4" /><line x1="15" y1="1" x2="15" y2="4" /><line x1="9" y1="20" x2="9" y2="23" /><line x1="15" y1="20" x2="15" y2="23" /><line x1="20" y1="9" x2="23" y2="9" /><line x1="20" y1="15" x2="23" y2="15" /><line x1="1" y1="9" x2="4" y2="9" /><line x1="1" y1="15" x2="4" y2="15" />
-  </svg>
-);
-
 const IconActivity = ({ size = 20, className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <polyline points="22 12 18 12 14 20 10 4 6 12 2 12" />
@@ -51,15 +39,17 @@ const IconServer = ({ size = 20, className = "" }) => (
   </svg>
 );
 
-const IconCheckCircle = ({ size = 20, className = "" }) => (
+const IconEdit = ({ size = 16, className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </svg>
 );
 
-const IconAlertTriangle = ({ size = 20, className = "" }) => (
+const IconTrash = ({ size = 16, className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+    <polyline points="3 6 5 6 21 6" strokeWidth="2" />
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" strokeWidth="2" />
   </svg>
 );
 
@@ -162,10 +152,10 @@ export default function App() {
   const [naps, setNaps] = useState(INITIAL_NAPS);
   const [clients, setClients] = useState(INITIAL_CLIENTS);
 
-  const [selectedNap, setSelectedNap] = useState(null);
+  const [selectedNap, setSelectedNap] = useState<any>(null);
   const [isNapModalOpen, setIsNapModalOpen] = useState(false);
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
-  const [editingClientId, setEditingClientId] = useState(null);
+  const [editingClientId, setEditingClientId] = useState<string | null>(null);
   const [newLogText, setNewLogText] = useState('');
 
   const emptyNapForm = {
@@ -232,7 +222,7 @@ export default function App() {
         status: 'free',
         clientId: null
       })),
-      logs: [{ id: Date.now(), date: new Date().toISOString().slice(0, 10), text: 'Caja NAP registrada en el sistema', author: 'Admin' }]
+      logs: [{ id: Date.now(), date: new Date().toISOString().slice(0, 10), text: 'Caja NAP registrada', author: 'Admin' }]
     };
 
     try {
@@ -248,11 +238,63 @@ export default function App() {
     setNapFormData(emptyNapForm);
   };
 
+  const handleOpenNewClientModal = () => {
+    setEditingClientId(null);
+    setClientFormData(emptyClientForm);
+    setIsClientModalOpen(true);
+  };
+
+  const handleEditClient = (client: any) => {
+    setEditingClientId(client.id);
+    setClientFormData({ ...client });
+    setIsClientModalOpen(true);
+  };
+
+  const handleDeleteClient = async (clientId: string, napId: string, portNumber: number) => {
+    if (confirm('¿Deseas eliminar este cliente y liberar su puerto NAP?')) {
+      setNaps(prevNaps => prevNaps.map(nap => {
+        if (nap.id === napId) {
+          const updatedPorts = nap.ports.map((p: any) => {
+            if (p.portNumber === portNumber) {
+              return { ...p, status: 'free', clientId: null };
+            }
+            return p;
+          });
+          return { ...nap, ports: updatedPorts };
+        }
+        return nap;
+      }));
+
+      setClients(clients.filter(c => c.id !== clientId));
+
+      try {
+        if (supabase && supabase.from) {
+          await supabase.from('clients').delete().eq('id', clientId);
+        }
+      } catch (err) {
+        console.log('Eliminado localmente');
+      }
+    }
+  };
+
   const handleSaveClient = async (e: React.FormEvent) => {
     e.preventDefault();
     const clientToSave = editingClientId
       ? { ...clientFormData, id: editingClientId }
       : { ...clientFormData, id: `CLI-${Date.now().toString().slice(-4)}` };
+
+    setNaps(prevNaps => prevNaps.map(nap => {
+      if (nap.id === clientToSave.napId) {
+        const updatedPorts = nap.ports.map((p: any) => {
+          if (p.portNumber === Number(clientToSave.portNumber)) {
+            return { ...p, status: 'occupied', clientId: clientToSave.id };
+          }
+          return p;
+        });
+        return { ...nap, ports: updatedPorts };
+      }
+      return nap;
+    }));
 
     try {
       if (supabase && supabase.from) {
@@ -391,7 +433,7 @@ export default function App() {
               <span>Nueva NAP</span>
             </button>
             <button
-              onClick={() => { setEditingClientId(null); setClientFormData(emptyClientForm); setIsClientModalOpen(true); }}
+              onClick={handleOpenNewClientModal}
               className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-sm font-medium transition"
             >
               <IconPlus size={16} />
@@ -599,6 +641,7 @@ export default function App() {
                     <th className="p-3">NAP / Puerto</th>
                     <th className="p-3">ONT / IP</th>
                     <th className="p-3">Estado</th>
+                    <th className="p-3 text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700">
@@ -608,6 +651,14 @@ export default function App() {
                       <td className="p-3">{c.napId} (Pto {c.portNumber})</td>
                       <td className="p-3 font-mono text-xs text-cyan-300">{c.ontModel} <br/>{c.ipAddress}</td>
                       <td className="p-3"><span className="px-2 py-0.5 rounded text-xs bg-emerald-500/10 text-emerald-400">{c.status}</span></td>
+                      <td className="p-3 text-right space-x-2">
+                        <button onClick={() => handleEditClient(c)} className="p-1.5 bg-slate-700 hover:bg-cyan-600 rounded text-slate-300 hover:text-white transition" title="Editar">
+                          <IconEdit size={16} />
+                        </button>
+                        <button onClick={() => handleDeleteClient(c.id, c.napId, c.portNumber)} className="p-1.5 bg-slate-700 hover:bg-rose-600 rounded text-slate-300 hover:text-white transition" title="Eliminar">
+                          <IconTrash size={16} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -661,11 +712,11 @@ export default function App() {
         </div>
       )}
 
-      {/* MODAL NUEVO CLIENTE */}
+      {/* MODAL NUEVO / EDITAR CLIENTE */}
       {isClientModalOpen && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
           <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl w-full max-w-md space-y-4">
-            <h3 className="text-lg font-bold text-white">Registrar Nuevo Cliente</h3>
+            <h3 className="text-lg font-bold text-white">{editingClientId ? 'Editar Cliente' : 'Registrar Nuevo Cliente'}</h3>
             <form onSubmit={handleSaveClient} className="space-y-3">
               <div>
                 <label className="text-xs text-slate-400">Nombre Completo</label>
@@ -694,7 +745,7 @@ export default function App() {
               </div>
               <div className="flex justify-end space-x-2 pt-2">
                 <button type="button" onClick={() => setIsClientModalOpen(false)} className="px-4 py-2 bg-slate-800 text-slate-300 rounded text-sm">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium">Guardar Cliente</button>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium">{editingClientId ? 'Actualizar' : 'Guardar Cliente'}</button>
               </div>
             </form>
           </div>
