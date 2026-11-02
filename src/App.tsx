@@ -1,3 +1,4 @@
+import { supabase } from './supabase';
 import React, { useState, useEffect } from 'react';
 
 // Iconos SVG Nativos
@@ -252,12 +253,37 @@ export default function App() {
   const [clientFormData, setClientFormData] = useState(emptyClientForm);
 
   useEffect(() => {
-    localStorage.setItem('ftth_naps', JSON.stringify(naps));
-  }, [naps]);
-
-  useEffect(() => {
-    localStorage.setItem('ftth_clients', JSON.stringify(clients));
-  }, [clients]);
+    const loadInitialData = async () => {
+      const { data: napsData } = await supabase.from('naps').select('*');
+      const { data: clientsData } = await supabase.from('clients').select('*');
+  
+      if (napsData) setNaps(napsData);
+      if (clientsData) setClients(clientsData);
+    };
+  
+    loadInitialData();
+  
+    // Suscripción Realtime para NAPs
+    const napsChannel = supabase
+      .channel('realtime:naps')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'naps' }, () => {
+        loadInitialData();
+      })
+      .subscribe();
+  
+    // Suscripción Realtime para Clientes
+    const clientsChannel = supabase
+      .channel('realtime:clients')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'clients' }, () => {
+        loadInitialData();
+      })
+      .subscribe();
+  
+    return () => {
+      supabase.removeChannel(napsChannel);
+      supabase.removeChannel(clientsChannel);
+    };
+  }, []);
 
   useEffect(() => {
     if (selectedNap) {
@@ -413,7 +439,7 @@ export default function App() {
   );
   const occupancyRate = totalPorts > 0 ? ((occupiedPorts / totalPorts) * 100).toFixed(1) : 0;
 
-  const handleSaveNap = (e) => {
+  const handleSaveNap = async (e) => {
     e.preventDefault();
     const capacityNum = parseInt(napFormData.capacity);
     const newPorts = Array.from({ length: capacityNum }, (_, i) => ({
@@ -421,7 +447,7 @@ export default function App() {
       status: 'free',
       clientId: null
     }));
-
+  
     const newNap = {
       ...napFormData,
       id: napFormData.id || `NAP-${Date.now().toString().slice(-4)}`,
@@ -429,9 +455,19 @@ export default function App() {
       powerDbm: parseFloat(napFormData.powerDbm),
       lat: parseFloat(napFormData.lat) || -9.5298,
       lng: parseFloat(napFormData.lng) || -77.5289,
-      logs: [{ id: Date.now(), date: new Date().toISOString().slice(0, 10), text: 'NAP registrada en el sistema.', author: 'Admin' }],
+      logs: [{ id: Date.now(), date: new Date().toISOString().slice(0, 10), text: 'NAP registrada en el sistema' }],
       ports: newPorts
     };
+  
+    // Guardar en la base de datos de Supabase
+    const { error } = await supabase.from('naps').upsert([newNap]);
+    if (error) {
+      console.error('Error al guardar NAP en Supabase:', error);
+    }
+  
+    // Cerrar modal y limpiar formulario (continúa con la lógica que tenías abajo)
+    setIsNapModalOpen(false);
+  };
 
     setNaps([...naps, newNap]);
     setIsNapModalOpen(false);
@@ -468,14 +504,14 @@ export default function App() {
     }
   };
 
-  const handleSaveClient = (e) => {
+  const handleSaveClient = async (e: React.FormEvent) => {
     e.preventDefault();
     const targetNapId = clientFormData.napId;
     const targetPort = parseInt(clientFormData.portNumber);
-
+  
+    // Liberar puerto anterior si el cliente fue movido de NAP o puerto
     if (editingClientId) {
       const oldClient = clients.find(c => c.id === editingClientId);
-
       if (oldClient && (oldClient.napId !== targetNapId || oldClient.portNumber !== targetPort)) {
         setNaps(prevNaps => prevNaps.map(nap => {
           if (nap.id === oldClient.napId) {
@@ -490,51 +526,38 @@ export default function App() {
           return nap;
         }));
       }
-
-      setNaps(prevNaps => prevNaps.map(nap => {
-        if (nap.id === targetNapId) {
-          const ports = nap.ports.map(p => {
-            if (p.portNumber === targetPort) {
-              return { ...p, status: 'occupied', clientId: editingClientId };
-            }
-            return p;
-          });
-          return { ...nap, ports };
-        }
-        return nap;
-      }));
-
-      setClients(clients.map(c => c.id === editingClientId ? {
-        ...clientFormData,
-        portNumber: targetPort,
-        rxPower: parseFloat(clientFormData.rxPower)
-      } : c));
-
-    } else {
-      const clientId = `CLI-${Date.now().toString().slice(-4)}`;
-      const newClient = {
-        ...clientFormData,
-        id: clientId,
-        portNumber: targetPort,
-        rxPower: parseFloat(clientFormData.rxPower)
-      };
-
-      setNaps(prevNaps => prevNaps.map(nap => {
-        if (nap.id === targetNapId) {
-          const updatedPorts = nap.ports.map(p => {
-            if (p.portNumber === targetPort) {
-              return { ...p, status: 'occupied', clientId: clientId };
-            }
-            return p;
-          });
-          return { ...nap, ports: updatedPorts };
-        }
-        return nap;
-      }));
-
-      setClients([...clients, newClient]);
     }
-
+  
+    // Definir datos del cliente (nuevo o editado)
+    const clientToSave = editingClientId
+      ? { ...clientFormData, id: editingClientId }
+      : {
+          ...clientFormData,
+          id: `CLI-${Date.now().toString().slice(-4)}`,
+          registrationDate: new Date().toISOString().slice(0, 10)
+        };
+  
+    // Asignar/Actualizar nuevo puerto en la NAP destino
+    setNaps(prevNaps => prevNaps.map(nap => {
+      if (nap.id === targetNapId) {
+        const updatedPorts = nap.ports.map(p => {
+          if (p.portNumber === targetPort) {
+            return { ...p, status: 'occupied', clientId: clientToSave.id };
+          }
+          return p;
+        });
+        return { ...nap, ports: updatedPorts };
+      }
+      return nap;
+    }));
+  
+    // Guardar en la base de datos de Supabase
+    const { error } = await supabase.from('clients').upsert([clientToSave]);
+    if (error) {
+      console.error('Error al guardar cliente en Supabase:', error);
+    }
+  
+    // Limpiar formulario y cerrar modal
     setIsClientModalOpen(false);
     setEditingClientId(null);
     setClientFormData(emptyClientForm);
@@ -1253,4 +1276,5 @@ export default function App() {
       )}
     </div>
   );
-}
+
+  
