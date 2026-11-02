@@ -256,46 +256,30 @@ export default function App() {
     const loadInitialData = async () => {
       const { data: napsData } = await supabase.from('naps').select('*');
       const { data: clientsData } = await supabase.from('clients').select('*');
-
+  
       if (napsData) setNaps(napsData);
       if (clientsData) setClients(clientsData);
     };
-
+  
     loadInitialData();
-
-    // Suscripción Realtime para NAPs
-    const napsChannel = supabase
-      .channel('public:naps')
+  
+    // Canal unificado para escuchar cambios en tiempo real
+    const channel = supabase
+      .channel('db-changes')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'naps' },
-        () => {
-          console.log('Cambio detectado en NAPs, recargando...');
+        { event: '*', schema: 'public' },
+        (payload) => {
+          console.log('Cambio detectado en la base de datos:', payload);
           loadInitialData();
         }
       )
       .subscribe((status) => {
-        console.log('Estado Realtime NAPs:', status);
+        console.log('Estado de conexión del canal:', status);
       });
-
-    // Suscripción Realtime para Clientes
-    const clientsChannel = supabase
-      .channel('public:clients')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'clients' },
-        () => {
-          console.log('Cambio detectado en Clientes, recargando...');
-          loadInitialData();
-        }
-      )
-      .subscribe((status) => {
-        console.log('Estado Realtime Clientes:', status);
-      });
-
+  
     return () => {
-      supabase.removeChannel(napsChannel);
-      supabase.removeChannel(clientsChannel);
+      supabase.removeChannel(channel);
     };
   }, []);
 
