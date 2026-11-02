@@ -256,14 +256,14 @@ export default function App() {
     const loadInitialData = async () => {
       const { data: napsData } = await supabase.from('naps').select('*');
       const { data: clientsData } = await supabase.from('clients').select('*');
-  
+
       if (napsData) setNaps(napsData);
       if (clientsData) setClients(clientsData);
     };
-  
+
     loadInitialData();
-  
-    // Canal unificado para escuchar cambios en tiempo real
+
+    // Canal unificado para escuchar cambios en tiempo real en la base de datos
     const channel = supabase
       .channel('db-changes')
       .on(
@@ -277,12 +277,11 @@ export default function App() {
       .subscribe((status) => {
         console.log('Estado de conexión del canal:', status);
       });
-  
+
     return () => {
       supabase.removeChannel(channel);
     };
   }, []);
-
   useEffect(() => {
     if (selectedNap) {
       const updated = naps.find(n => n.id === selectedNap.id);
