@@ -27,6 +27,18 @@ const IconMapPin = ({ size = 20, className = "" }) => (
   </svg>
 );
 
+const IconRadio = ({ size = 20, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <circle cx="12" cy="12" r="2" /><path d="M16.2 7.8a6 6 0 0 1 0 8.4" /><path d="M7.8 16.2a6 6 0 0 1 0-8.4" /><path d="M19.1 4.9a10 10 0 0 1 0 14.2" /><path d="M4.9 19.1a10 10 0 0 1 0-14.2" />
+  </svg>
+);
+
+const IconCpu = ({ size = 20, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <rect x="4" y="4" width="16" height="16" rx="2" /><rect x="9" y="9" width="6" height="6" /><line x1="9" y1="1" x2="9" y2="4" /><line x1="15" y1="1" x2="15" y2="4" /><line x1="9" y1="20" x2="9" y2="23" /><line x1="15" y1="20" x2="15" y2="23" /><line x1="20" y1="9" x2="23" y2="9" /><line x1="20" y1="15" x2="23" y2="15" /><line x1="1" y1="9" x2="4" y2="9" /><line x1="1" y1="15" x2="4" y2="15" />
+  </svg>
+);
+
 const IconActivity = ({ size = 20, className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <polyline points="22 12 18 12 14 20 10 4 6 12 2 12" />
@@ -36,6 +48,18 @@ const IconActivity = ({ size = 20, className = "" }) => (
 const IconServer = ({ size = 20, className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <rect x="2" y="2" width="20" height="8" rx="2" ry="2" /><rect x="2" y="14" width="20" height="8" rx="2" ry="2" /><line x1="6" y1="6" x2="6.01" y2="6" /><line x1="6" y1="18" x2="6.01" y2="18" />
+  </svg>
+);
+
+const IconCheckCircle = ({ size = 20, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+  </svg>
+);
+
+const IconAlertTriangle = ({ size = 20, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
   </svg>
 );
 
@@ -59,11 +83,16 @@ const INITIAL_NAPS = [
     id: 'NAP-CENTRO-01',
     name: 'NAP Centro Plaza',
     address: 'Av. Luzuriaga 450, Huaraz',
+    lat: -9.5298,
+    lng: -77.5289,
     capacity: 16,
     powerDbm: -18.5,
+    logs: [
+      { id: 1, date: '2026-04-10', text: 'Instalación y certificación inicial de la caja NAP.', author: 'Soporte Tarscom' }
+    ],
     ports: Array.from({ length: 16 }, (_, i) => ({
       portNumber: i + 1,
-      status: i < 2 ? 'occupied' : i === 8 ? 'damaged' : 'free',
+      status: i < 2 ? 'occupied' : i === 8 ? 'damaged' : i === 12 ? 'reserved' : 'free',
       clientId: i < 2 ? `CLI-10${i + 1}` : null
     }))
   },
@@ -71,8 +100,13 @@ const INITIAL_NAPS = [
     id: 'NAP-NORTE-02',
     name: 'NAP San Martín',
     address: 'Jr. San Martín 120, Huaraz',
+    lat: -9.5240,
+    lng: -77.5265,
     capacity: 8,
     powerDbm: -19.2,
+    logs: [
+      { id: 1, date: '2026-04-12', text: 'Limpieza conector SC/APC por atenuación leve.', author: 'Técnico Campo' }
+    ],
     ports: Array.from({ length: 8 }, (_, i) => ({
       portNumber: i + 1,
       status: 'free',
@@ -90,9 +124,13 @@ const INITIAL_CLIENTS = [
     address: 'Av. Luzuriaga 452, Dpto 2',
     napId: 'NAP-CENTRO-01',
     portNumber: 1,
+    fiberColor: 'Azul',
     ontModel: 'Huawei HG8145V5',
+    ontSn: '4857544301A4B921',
     ipAddress: '192.168.10.15',
-    status: 'activo'
+    vlan: '100',
+    rxPower: -19.8,
+    status: 'active'
   },
   {
     id: 'CLI-102',
@@ -102,9 +140,13 @@ const INITIAL_CLIENTS = [
     address: 'Av. Luzuriaga 458',
     napId: 'NAP-CENTRO-01',
     portNumber: 2,
+    fiberColor: 'Naranja',
     ontModel: 'ZTE F670L',
+    ontSn: 'ZTEGC89A12FF',
     ipAddress: '192.168.10.16',
-    status: 'activo'
+    vlan: '100',
+    rxPower: -20.1,
+    status: 'active'
   }
 ];
 
@@ -120,13 +162,22 @@ export default function App() {
   const [naps, setNaps] = useState(INITIAL_NAPS);
   const [clients, setClients] = useState(INITIAL_CLIENTS);
 
+  const [selectedNap, setSelectedNap] = useState(null);
   const [isNapModalOpen, setIsNapModalOpen] = useState(false);
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+  const [editingClientId, setEditingClientId] = useState(null);
+  const [newLogText, setNewLogText] = useState('');
 
-  const emptyNapForm = { id: '', name: '', address: '', totalPorts: 16, powerDbm: -18.0 };
+  const emptyNapForm = {
+    id: '', name: '', address: '', lat: '-9.5298', lng: '-77.5289', capacity: 16, powerDbm: -18.0
+  };
   const [napFormData, setNapFormData] = useState(emptyNapForm);
 
-  const emptyClientForm = { id: '', name: '', dni: '', napId: '', portNumber: 1, ontModel: 'ZTE / Huawei', ipAddress: '', status: 'activo' };
+  const emptyClientForm = {
+    id: '', name: '', dni: '', phone: '', address: '', napId: '',
+    portNumber: 1, fiberColor: 'Azul', ontModel: 'ZTE / Huawei',
+    ontSn: '', ipAddress: '', vlan: '100', rxPower: -19.5, status: 'active'
+  };
   const [clientFormData, setClientFormData] = useState(emptyClientForm);
 
   const loadInitialData = async () => {
@@ -139,13 +190,20 @@ export default function App() {
         if (clientsData && clientsData.length > 0) setClients(clientsData);
       }
     } catch (err) {
-      console.log('Modo Offline / Local active');
+      console.log('Modo local activo');
     }
   };
 
   useEffect(() => {
     loadInitialData();
   }, []);
+
+  useEffect(() => {
+    if (selectedNap) {
+      const updated = naps.find(n => n.id === selectedNap.id);
+      if (updated) setSelectedNap(updated);
+    }
+  }, [naps]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,12 +226,13 @@ export default function App() {
     const newNap = {
       ...napFormData,
       id: napFormData.id || `NAP-${Date.now().toString().slice(-4)}`,
-      capacity: parseInt(String(napFormData.totalPorts || 16)),
-      ports: Array.from({ length: parseInt(String(napFormData.totalPorts || 16)) }, (_, i) => ({
+      capacity: parseInt(String(napFormData.capacity || 16)),
+      ports: Array.from({ length: parseInt(String(napFormData.capacity || 16)) }, (_, i) => ({
         portNumber: i + 1,
         status: 'free',
         clientId: null
-      }))
+      })),
+      logs: [{ id: Date.now(), date: new Date().toISOString().slice(0, 10), text: 'Caja NAP registrada en el sistema', author: 'Admin' }]
     };
 
     try {
@@ -184,29 +243,67 @@ export default function App() {
       console.log('Guardando localmente...');
     }
 
-    setNaps(prev => [...prev, newNap]);
+    setNaps(prev => [...prev.filter(n => n.id !== newNap.id), newNap]);
     setIsNapModalOpen(false);
     setNapFormData(emptyNapForm);
   };
 
   const handleSaveClient = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newClient = {
-      ...clientFormData,
-      id: `CLI-${Date.now().toString().slice(-4)}`
-    };
+    const clientToSave = editingClientId
+      ? { ...clientFormData, id: editingClientId }
+      : { ...clientFormData, id: `CLI-${Date.now().toString().slice(-4)}` };
 
     try {
       if (supabase && supabase.from) {
-        await supabase.from('clients').upsert([newClient]);
+        await supabase.from('clients').upsert([clientToSave]);
       }
     } catch (err) {
       console.log('Guardando localmente...');
     }
 
-    setClients(prev => [...prev, newClient]);
+    setClients(prev => [...prev.filter(c => c.id !== clientToSave.id), clientToSave]);
     setIsClientModalOpen(false);
+    setEditingClientId(null);
     setClientFormData(emptyClientForm);
+  };
+
+  const handlePortStatusChange = (napId: string, portNum: number, newStatus: string) => {
+    setNaps(naps.map(nap => {
+      if (nap.id === napId) {
+        const updatedPorts = nap.ports.map((p: any) => {
+          if (p.portNumber === portNum) {
+            return { ...p, status: newStatus };
+          }
+          return p;
+        });
+        return { ...nap, ports: updatedPorts };
+      }
+      return nap;
+    }));
+  };
+
+  const handleAddLog = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newLogText.trim() || !selectedNap) return;
+
+    const newLog = {
+      id: Date.now(),
+      date: new Date().toISOString().slice(0, 10),
+      text: newLogText,
+      author: 'Técnico'
+    };
+
+    setNaps(naps.map(nap => {
+      if (nap.id === selectedNap.id) {
+        return {
+          ...nap,
+          logs: [newLog, ...(nap.logs || [])]
+        };
+      }
+      return nap;
+    }));
+    setNewLogText('');
   };
 
   if (!isAuthenticated) {
@@ -265,7 +362,7 @@ export default function App() {
   }
 
   const totalPorts = naps.reduce((acc, n) => acc + (n.capacity || 16), 0);
-  const occupiedPorts = naps.reduce((acc, n) => acc + (n.ports ? n.ports.filter(p => p.status === 'occupied').length : 0), 0);
+  const occupiedPorts = naps.reduce((acc, n) => acc + (n.ports ? n.ports.filter((p: any) => p.status === 'occupied').length : 0), 0);
   const freePorts = totalPorts - occupiedPorts;
   const occupancyRate = totalPorts > 0 ? ((occupiedPorts / totalPorts) * 100).toFixed(1) : 0;
 
@@ -281,7 +378,7 @@ export default function App() {
               <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                 TARSCOM FTTH
               </h1>
-              <p className="text-xs text-slate-400">Gestor de Cajas NAP</p>
+              <p className="text-xs text-slate-400">Gestor de Cajas NAP y Puertos</p>
             </div>
           </div>
 
@@ -294,7 +391,7 @@ export default function App() {
               <span>Nueva NAP</span>
             </button>
             <button
-              onClick={() => setIsClientModalOpen(true)}
+              onClick={() => { setEditingClientId(null); setClientFormData(emptyClientForm); setIsClientModalOpen(true); }}
               className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white px-3 py-2 rounded-lg text-sm font-medium transition"
             >
               <IconPlus size={16} />
@@ -302,6 +399,7 @@ export default function App() {
             </button>
             <button
               onClick={handleLogout}
+              title="Cerrar Sesión"
               className="p-2 text-slate-400 hover:text-rose-400 bg-slate-700/50 rounded-lg transition"
             >
               <IconLogOut size={18} />
@@ -363,33 +461,129 @@ export default function App() {
             <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">
               <h2 className="text-lg font-bold text-slate-100 mb-4">Estado General de NAPs</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {naps.map(nap => (
-                  <div key={nap.id} className="bg-slate-900/60 p-4 rounded-lg border border-slate-700">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-bold text-cyan-400">{nap.id}</span>
-                      <span className="text-xs bg-slate-700 px-2 py-0.5 rounded text-slate-300">{nap.capacity} Puertos</span>
+                {naps.map(nap => {
+                  const cap = nap.capacity || 16;
+                  const occupied = nap.ports ? nap.ports.filter((p: any) => p.status === 'occupied').length : 0;
+                  const percent = Math.round((occupied / cap) * 100);
+                  return (
+                    <div 
+                      key={nap.id} 
+                      onClick={() => { setSelectedNap(nap); setActiveTab('naps'); }}
+                      className="bg-slate-900/60 p-4 rounded-lg border border-slate-700 cursor-pointer hover:border-cyan-500 transition"
+                    >
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-bold text-cyan-400">{nap.id}</span>
+                        <span className="text-xs bg-slate-700 px-2 py-0.5 rounded text-slate-300">{occupied}/{cap} ({percent}%)</span>
+                      </div>
+                      <p className="text-xs text-slate-300 truncate mb-3">{nap.name}</p>
+                      <div className="grid grid-cols-8 gap-1">
+                        {nap.ports && nap.ports.map((p: any) => (
+                          <div 
+                            key={p.portNumber} 
+                            className={`h-2.5 rounded-sm ${
+                              p.status === 'occupied' ? 'bg-cyan-500' :
+                              p.status === 'damaged' ? 'bg-rose-500' :
+                              p.status === 'reserved' ? 'bg-amber-500' : 'bg-slate-700'
+                            }`}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-300 truncate">{nap.name}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
         )}
 
         {activeTab === 'naps' && (
-          <div className="space-y-6">
-            <h2 className="text-xl font-bold">Gestión de Cajas NAP</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-4">
+              <h2 className="text-lg font-bold text-slate-100">Cajas NAP</h2>
               {naps.map(nap => (
-                <div key={nap.id} className="bg-slate-800 border border-slate-700 p-5 rounded-xl space-y-2">
-                  <h3 className="font-bold text-cyan-400">{nap.name} ({nap.id})</h3>
-                  <p className="text-xs text-slate-400">
-                    <IconMapPin size={14} className="inline mr-1" />
-                    {nap.address}
-                  </p>
+                <div 
+                  key={nap.id}
+                  onClick={() => setSelectedNap(nap)}
+                  className={`p-4 rounded-xl border cursor-pointer transition ${
+                    selectedNap?.id === nap.id ? 'bg-cyan-950/30 border-cyan-500' : 'bg-slate-800 border-slate-700 hover:border-slate-600'
+                  }`}
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-cyan-400">{nap.id}</span>
+                    <span className="text-xs text-emerald-400 font-mono">{nap.powerDbm || -18.5} dBm</span>
+                  </div>
+                  <p className="text-sm font-semibold text-white mt-1">{nap.name}</p>
+                  <p className="text-xs text-slate-400 flex items-center mt-1"><IconMapPin size={12} className="mr-1" />{nap.address}</p>
                 </div>
               ))}
+            </div>
+
+            <div className="lg:col-span-2 space-y-6">
+              {selectedNap ? (
+                <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 space-y-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-xl font-bold text-cyan-400">{selectedNap.name}</h2>
+                      <p className="text-xs text-slate-400">{selectedNap.id} • {selectedNap.address}</p>
+                    </div>
+                    <span className="text-xs px-2.5 py-1 bg-cyan-500/10 text-cyan-400 rounded-lg border border-cyan-500/20 font-mono">
+                      Potencia: {selectedNap.powerDbm || -18.5} dBm
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">Estado de Puertos (Haz clic para cambiar)</h3>
+                    <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                      {selectedNap.ports && selectedNap.ports.map((p: any) => (
+                        <div 
+                          key={p.portNumber}
+                          onClick={() => {
+                            const next = p.status === 'free' ? 'occupied' : p.status === 'occupied' ? 'damaged' : 'free';
+                            handlePortStatusChange(selectedNap.id, p.portNumber, next);
+                          }}
+                          className={`p-3 rounded-lg border text-center cursor-pointer transition ${
+                            p.status === 'occupied' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-300' :
+                            p.status === 'damaged' ? 'bg-rose-500/10 border-rose-500 text-rose-300' :
+                            p.status === 'reserved' ? 'bg-amber-500/10 border-amber-500 text-amber-300' :
+                            'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
+                          }`}
+                        >
+                          <div className="text-xs font-bold">Pto {p.portNumber}</div>
+                          <div className="text-[10px] uppercase mt-1 opacity-80">{p.status}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-700 pt-4 space-y-3">
+                    <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Historial y Bitácora</h3>
+                    <form onSubmit={handleAddLog} className="flex gap-2">
+                      <input 
+                        type="text" 
+                        placeholder="Agregar nota de mantenimiento..."
+                        value={newLogText}
+                        onChange={e => setNewLogText(e.target.value)}
+                        className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500"
+                      />
+                      <button type="submit" className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                        Registrar
+                      </button>
+                    </form>
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {selectedNap.logs && selectedNap.logs.map((log: any) => (
+                        <div key={log.id} className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800 text-xs flex justify-between">
+                          <span className="text-slate-300">{log.text}</span>
+                          <span className="text-slate-500 font-mono">{log.date}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-slate-800/50 border border-slate-700/60 rounded-xl p-12 text-center text-slate-400">
+                  Selecciona una Caja NAP de la izquierda para ver y gestionar sus puertos detalladamente.
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -403,16 +597,16 @@ export default function App() {
                   <tr>
                     <th className="p-3">Cliente</th>
                     <th className="p-3">NAP / Puerto</th>
-                    <th className="p-3">ONT</th>
+                    <th className="p-3">ONT / IP</th>
                     <th className="p-3">Estado</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700">
                   {clients.map(c => (
-                    <tr key={c.id}>
-                      <td className="p-3 font-medium">{c.name}</td>
+                    <tr key={c.id} className="hover:bg-slate-750">
+                      <td className="p-3 font-medium">{c.name} <div className="text-xs text-slate-400">DNI: {c.dni}</div></td>
                       <td className="p-3">{c.napId} (Pto {c.portNumber})</td>
-                      <td className="p-3 font-mono text-xs text-cyan-300">{c.ontModel}</td>
+                      <td className="p-3 font-mono text-xs text-cyan-300">{c.ontModel} <br/>{c.ipAddress}</td>
                       <td className="p-3"><span className="px-2 py-0.5 rounded text-xs bg-emerald-500/10 text-emerald-400">{c.status}</span></td>
                     </tr>
                   ))}
@@ -429,9 +623,35 @@ export default function App() {
           <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl w-full max-w-md space-y-4">
             <h3 className="text-lg font-bold text-white">Registrar Caja NAP</h3>
             <form onSubmit={handleSaveNap} className="space-y-3">
-              <input type="text" placeholder="Código ID (ej. NAP-01)" required value={napFormData.id} onChange={e => setNapFormData({...napFormData, id: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white" />
-              <input type="text" placeholder="Nombre / Ubicación" required value={napFormData.name} onChange={e => setNapFormData({...napFormData, name: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white" />
-              <input type="text" placeholder="Dirección" required value={napFormData.address} onChange={e => setNapFormData({...napFormData, address: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white" />
+              <div>
+                <label className="text-xs text-slate-400">Código ID</label>
+                <input type="text" placeholder="NAP-EST-01" required value={napFormData.id} onChange={e => setNapFormData({...napFormData, id: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-slate-400">Nombre / Ubicación</label>
+                <input type="text" placeholder="Parque Principal" required value={napFormData.name} onChange={e => setNapFormData({...napFormData, name: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-slate-400">Dirección</label>
+                <input type="text" placeholder="Av. Principal 123" required value={napFormData.address} onChange={e => setNapFormData({...napFormData, address: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white" />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs text-slate-400">Latitud</label>
+                  <input type="text" value={napFormData.lat} onChange={e => setNapFormData({...napFormData, lat: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white" />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400">Longitud</label>
+                  <input type="text" value={napFormData.lng} onChange={e => setNapFormData({...napFormData, lng: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-slate-400">Capacidad de Puertos</label>
+                <select value={napFormData.capacity} onChange={e => setNapFormData({...napFormData, capacity: parseInt(e.target.value)})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
+                  <option value={8}>8 Puertos</option>
+                  <option value={16}>16 Puertos</option>
+                </select>
+              </div>
               <div className="flex justify-end space-x-2 pt-2">
                 <button type="button" onClick={() => setIsNapModalOpen(false)} className="px-4 py-2 bg-slate-800 text-slate-300 rounded text-sm">Cancelar</button>
                 <button type="submit" className="px-4 py-2 bg-cyan-600 text-white rounded text-sm font-medium">Guardar NAP</button>
@@ -447,12 +667,31 @@ export default function App() {
           <div className="bg-slate-900 border border-slate-800 p-6 rounded-xl w-full max-w-md space-y-4">
             <h3 className="text-lg font-bold text-white">Registrar Nuevo Cliente</h3>
             <form onSubmit={handleSaveClient} className="space-y-3">
-              <input type="text" placeholder="Nombre Completo" required value={clientFormData.name} onChange={e => setClientFormData({...clientFormData, name: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white" />
-              <input type="text" placeholder="DNI" required value={clientFormData.dni} onChange={e => setClientFormData({...clientFormData, dni: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white" />
-              <select value={clientFormData.napId} onChange={e => setClientFormData({...clientFormData, napId: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
-                <option value="">Seleccione una NAP</option>
-                {naps.map(n => <option key={n.id} value={n.id}>{n.name} ({n.id})</option>)}
-              </select>
+              <div>
+                <label className="text-xs text-slate-400">Nombre Completo</label>
+                <input type="text" placeholder="Juan Pérez" required value={clientFormData.name} onChange={e => setClientFormData({...clientFormData, name: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-slate-400">DNI</label>
+                <input type="text" placeholder="45892011" required value={clientFormData.dni} onChange={e => setClientFormData({...clientFormData, dni: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white" />
+              </div>
+              <div>
+                <label className="text-xs text-slate-400">Caja NAP Asignada</label>
+                <select value={clientFormData.napId} onChange={e => setClientFormData({...clientFormData, napId: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white">
+                  <option value="">Seleccione una NAP</option>
+                  {naps.map(n => <option key={n.id} value={n.id}>{n.name} ({n.id})</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-xs text-slate-400">Puerto Nº</label>
+                  <input type="number" min={1} max={16} value={clientFormData.portNumber} onChange={e => setClientFormData({...clientFormData, portNumber: parseInt(e.target.value)})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white" />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400">Modelo ONT</label>
+                  <input type="text" value={clientFormData.ontModel} onChange={e => setClientFormData({...clientFormData, ontModel: e.target.value})} className="w-full bg-slate-950 border border-slate-800 rounded p-2 text-sm text-white" />
+                </div>
+              </div>
               <div className="flex justify-end space-x-2 pt-2">
                 <button type="button" onClick={() => setIsClientModalOpen(false)} className="px-4 py-2 bg-slate-800 text-slate-300 rounded text-sm">Cancelar</button>
                 <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium">Guardar Cliente</button>
