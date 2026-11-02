@@ -282,6 +282,7 @@ export default function App() {
       supabase.removeChannel(channel);
     };
   }, []);
+  
   useEffect(() => {
     if (selectedNap) {
       const updated = naps.find(n => n.id === selectedNap.id);
