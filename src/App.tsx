@@ -519,16 +519,43 @@ export default function App() {
                       </div>
                       <p className="text-xs text-slate-300 truncate mb-3">{nap.name}</p>
                       <div className="grid grid-cols-8 gap-1">
-                        {nap.ports && nap.ports.map((p: any) => (
-                          <div 
-                            key={p.portNumber} 
-                            className={`h-2.5 rounded-sm ${
-                              p.status === 'occupied' ? 'bg-cyan-500' :
-                              p.status === 'damaged' ? 'bg-rose-500' :
-                              p.status === 'reserved' ? 'bg-amber-500' : 'bg-slate-700'
-                            }`}
-                          />
-                        ))}
+                      {nap.ports && nap.ports.map((p: any, portIndex: number) => (
+  <div
+    key={p.portNumber || portIndex}
+    onClick={async (e) => {
+      e.stopPropagation(); // Evita que se abra la caja completa al hacer clic en un puerto
+      
+      // 1. Cambiar el estado del puerto localmente ('occupied' a 'available' o viceversa)
+      const updatedPorts = nap.ports.map((port: any, idx: number) => {
+        if (idx === portIndex) {
+          const newStatus = port.status === 'occupied' ? 'available' : 'occupied';
+          return { ...port, status: newStatus };
+        }
+        return port;
+      });
+
+      // 2. Actualizar en Supabase de forma inmediata
+      const { error } = await supabase
+        .from('naps')
+        .update({ ports: updatedPorts })
+        .eq('id', nap.id);
+
+      if (error) {
+        console.error('Error al actualizar puerto:', error.message);
+      } else {
+        // 3. Recargar o actualizar el estado de las NAPs en pantalla
+        // (Si tienes una función como fetchNaps() o loadNaps(), llámala aquí)
+        window.location.reload(); 
+      }
+    }}
+    className={`h-2.5 rounded-sm cursor-pointer ${
+      p.status === 'occupied' ? 'bg-cyan-500' :
+      p.status === 'damaged' ? 'bg-rose-500' :
+      p.status === 'reserved' ? 'bg-amber-500' : 'bg-slate-700'
+    }`}
+    title={`Puerto ${p.portNumber}: ${p.status}`}
+  />
+))}
                       </div>
                     </div>
                   );
