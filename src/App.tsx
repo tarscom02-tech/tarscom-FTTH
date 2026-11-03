@@ -623,6 +623,26 @@ export default function App() {
                         </div>
                       ))}
                     </div>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const { error } = await supabase
+                        .from('naps')
+                        .update({ ports: selectedNap.ports })
+                        .eq('id', selectedNap.id);
+
+                     if (error) {
+                        console.error('Error al guardar:', error.message);
+                         alert('Hubo un error al guardar los cambios.');
+                     } else {
+                      alert('¡Estado de puertos guardado correctamente!');
+                     window.location.reload();
+                    }
+                    }}
+                     className="mt-4 mb-4 w-full bg-cyan-600 hover:bg-cyan-500 text-white font-medium py-2.5 px-4 rounded-lg transition shadow-lg flex items-center justify-center gap-2"
+>
+  Guardar Cambios de Puertos
+</button>
                   </div>
 
                   <div className="border-t border-slate-700 pt-4 space-y-3">
