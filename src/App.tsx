@@ -523,9 +523,9 @@ export default function App() {
   <div
     key={p.portNumber || portIndex}
     onClick={async (e) => {
-      e.stopPropagation(); // Evita que se abra la caja completa al hacer clic en un puerto
+      e.stopPropagation();
+      console.log("1. Clic detectado en puerto:", portIndex, "de la NAP:", nap.id);
       
-      // 1. Cambiar el estado del puerto localmente ('occupied' a 'available' o viceversa)
       const updatedPorts = nap.ports.map((port: any, idx: number) => {
         if (idx === portIndex) {
           const newStatus = port.status === 'occupied' ? 'available' : 'occupied';
@@ -534,18 +534,19 @@ export default function App() {
         return port;
       });
 
-      // 2. Actualizar en Supabase de forma inmediata
-      const { error } = await supabase
+      console.log("2. Enviando a Supabase los nuevos puertos:", updatedPorts);
+
+      const { data, error } = await supabase
         .from('naps')
         .update({ ports: updatedPorts })
-        .eq('id', nap.id);
+        .eq('id', nap.id)
+        .select();
 
       if (error) {
-        console.error('Error al actualizar puerto:', error.message);
+        console.error('❌ ERROR de Supabase al actualizar:', error.message, error.details, error.hint);
       } else {
-        // 3. Recargar o actualizar el estado de las NAPs en pantalla
-        // (Si tienes una función como fetchNaps() o loadNaps(), llámala aquí)
-        window.location.reload(); 
+        console.log('✅ ÉXITO al actualizar en Supabase:', data);
+        window.location.reload();
       }
     }}
     className={`h-2.5 rounded-sm cursor-pointer ${
